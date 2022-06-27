@@ -120,7 +120,7 @@ class QHM(Optimizer):
 
                 if weight_decay != 0:
                     if weight_decay_type == "grad":
-                        d_p.add_(weight_decay, p.data)
+                        d_p.add_(p.data, weight_decay)  # d_p.add_(weight_decay, p.data)
                     elif weight_decay_type == "direct":
                         p.data.mul_(1.0 - lr * weight_decay)
                     else:
@@ -130,10 +130,10 @@ class QHM(Optimizer):
                     param_state["momentum_buffer"] = torch.zeros_like(p.data)
 
                 momentum_buffer = param_state["momentum_buffer"]
-                momentum_buffer.mul_(momentum).add_(1.0 - momentum, d_p)
+                momentum_buffer.mul_(momentum).add_(d_p, alpha=1.0 - momentum)  # momentum_buffer.mul_(momentum).add_(1.0 - momentum, d_p)
 
-                p.data.add_(-lr * nu, momentum_buffer)
-                p.data.add_(-lr * (1.0 - nu), d_p)
+                p.data.add_(momentum_buffer, -lr * nu)  # p.data.add_(-lr * nu, momentum_buffer)
+                p.data.add_(d_p, -lr * (1.0 - nu))  # p.data.add_(-lr * (1.0 - nu), d_p)
 
         return loss
 
